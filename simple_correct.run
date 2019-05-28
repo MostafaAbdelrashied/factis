@@ -1,0 +1,25 @@
+# optimized model
+
+reset;
+model models/opt_eex_price_ccbat_opt.mod;
+data bat.dat;
+data period.dat;
+data correct/fix_01.dat;
+
+option solver cplexamp;
+# option relax_integrality 0;
+option cplex_options 'solutionlim=600 mipgap=0.01 timelimit=600 integrality=0.00001 mipdisplay=1';
+option log_file log_file_correct.txt;
+option presolve_eps 0.00000001;
+option cplex_options 'conflictdisplay=2 feasopt=1 feasoptobj=1 iisfind=1';
+
+solve;
+
+display solve_result_num, solve_result;
+display _solve_time, _ampl_time;
+display ampl_profit;
+
+if (solve_result_num >= 200) && (solve_result_num < 400) then {printf "Error: could not optimize\n"};
+printf{x in 1.._nvars} "%10s    %10.9f \n ", _varname[x], _var[x] > output/generic/generic_out.dat;
+printf{x in 1..T} "solve[%d]   %10s \n ", x, solve_result >> output/generic/generic_out.dat;
+update data;
